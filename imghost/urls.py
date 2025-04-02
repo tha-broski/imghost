@@ -17,10 +17,14 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-from imghostapp import views
+from imghostapp.views import home_view
+
+from account.views import register_view
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    # AUTH
-    path("signup/", views.signupuser, name="signupuser"),
+    # Home
+    path('', home_view, name='home'),
+
+    path('register/', register_view, name='register'),
 ]

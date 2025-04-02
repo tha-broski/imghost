@@ -1,19 +1,9 @@
 from django.shortcuts import render
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
+from django.shortcuts import render
+from django.conf import settings
 
 
 # Create your views here.
-def signupuser(request):
-    if request.method == "GET":
-        return render(
-            request, "imghostapp/signupuser.html", {"form": UserCreationForm()}
-        )
-    else:
-        if request.POST["password1"] == request.POST["password2"]:
-            user = User.objects.create_user(
-                request.POST["username"], password=request.POST["password1"]
-            )
-            user.save()
-    # else:
-    #    print("error")
+def home_view(request):
+	context = {}
+	return render(request, "imghostapp/home.html", context)

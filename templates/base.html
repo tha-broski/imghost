@@ -1,0 +1,30 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang=en>
+
+<head>
+	<!-- Required meta tags -->
+    <meta charset="utf-8">
+
+</head>
+
+<body>
+
+<header>
+	<a href="{% url 'register' %}">Register</a>
+</header>
+
+<!-- Body -->
+<div class="main">
+	{% block content %}
+
+	{% endblock content %}
+</div>
+<!-- End Body -->
+
+
+</body>
+
+
+</html>
