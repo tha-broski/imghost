@@ -17,18 +17,20 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-from imghostapp.views import home_view
 from django.contrib.auth import views as auth_views
+from imghostapp import views
 
 from account.views import (
     register_view,
     login_view,
     logout_view,
 )
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
     # Home
-    path('', home_view, name='home'),
+    path('', views.home_view, name='home'),
 
     path('register/', register_view, name='register'),
     path('login/', login_view, name='login'),
@@ -52,5 +54,10 @@ urlpatterns = [
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='password_reset/password_reset_complete.html'),
      name='password_reset_complete'),
 
-     path("admin/", admin.site.urls),
+    # Adding image path
+    path('upload/', views.upload_image, name='upload-image'),
+
+    # Admin path
+    path("admin/", admin.site.urls),
 ]
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
