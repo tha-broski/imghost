@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from .forms import ImageForm
 from django.contrib import messages
+from .models import Image
 
 # Create your views here.
 def home_view(request):
@@ -14,7 +15,9 @@ def upload_image(request):
     if request.method == 'POST':
         form = ImageForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            image = form.save(commit=False)
+            image.user = request.user
+            image.save()
             messages.success(request, 'Image has been uploaded to the server')
             return redirect('upload-image')
     else:
