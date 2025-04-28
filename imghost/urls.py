@@ -59,5 +59,8 @@ urlpatterns = [
 
     # Admin path
     path("admin/", admin.site.urls),
+
+    # Gallery path
+    path('user/<str:username>/', views.user_gallery, name='user-gallery'),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

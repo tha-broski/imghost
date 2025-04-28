@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Gallery of {{ user.username }}</h1>
+
+{% if images %}
+    <ul>
+        {% for image in images %}
+            <li>
+                <strong>{{ image.title }}</strong><br>
+                <img src="{{ image.image.url }}" alt="{{ image.title }}" width="300">
+            </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+        <p>This user has not uploaded any images yet.</p>
+{% endif %}
+{% endblock %}
