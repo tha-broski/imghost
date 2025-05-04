@@ -62,5 +62,9 @@ urlpatterns = [
 
     # Gallery path
     path('user/<str:username>/', views.user_gallery, name='user-gallery'),
+
+    # Editing images
+    path('image/delete/<int:image_id>/', views.delete_image, name='delete_image'),
+    path('image/edit/<int:image_id>/', views.edit_image, name='edit_image')
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
