@@ -7,6 +7,7 @@ from .models import Image
 from account.models import Account
 from django.http import HttpResponseForbidden
 from django.core.paginator import Paginator
+from imghostapp.utils.storage import get_user_storage_size, get_user_storage_limit
 
 # Create your views here.
 def home_view(request):
@@ -17,9 +18,20 @@ def home_view(request):
 def upload_image(request):
     if request.method == 'POST':
         form = ImageForm(request.POST, request.FILES)
+
         if form.is_valid():
             image = form.save(commit=False)
             image.user = request.user
+            uploaded_file = request.FILES['image']
+            uploaded_file_size = uploaded_file.size
+
+            current_usage = get_user_storage_size(request.user)
+            max_limit = get_user_storage_limit(request.user)
+
+            if current_usage + uploaded_file_size > max_limit:
+                 messages.error(request, 'Upload failed: Storage limit exceeded.')
+                 return redirect('upload-image')
+            
             image.save()
             messages.success(request, 'Image has been uploaded to the server')
             return redirect('upload-image')
@@ -38,14 +50,27 @@ def user_gallery(request, username):
         ):
           return HttpResponseForbidden("Sorry, you can't access this site.")
      
-     images_list = Image.objects.filter(user=user).order_by('-created_at')
+     images = Image.objects.filter(user=user).order_by('-created_at')
 
      # Paginator
      paginator = Paginator(images, 10)
      page_number = request.GET.get('page')
      images = paginator.get_page(page_number)
 
-     return render(request, 'gallery/user_gallery.html', {'user':user, 'images':images})
+     # Storage
+     current_usage = get_user_storage_size(user)
+     max_limit = get_user_storage_limit(user)
+     remaining_space = max_limit - current_usage
+
+     context = {
+          'user':user,
+          'images':images,
+          'current_usage': current_usage,
+          'max_limit':max_limit,
+          'remaining_space':remaining_space,
+     }
+
+     return render(request, 'gallery/user_gallery.html', context)
 
 @login_required
 def delete_image(request, image_id):
@@ -58,7 +83,7 @@ def delete_image(request, image_id):
 def edit_image(request, image_id):
      image = get_object_or_404(Image, id=image_id)
      if request.user != image.user:
-          return HttpResponseForbidden
+          return HttpResponseForbidden("You are not allowed to edit this image")
      if request.method == 'POST':
           new_title = request.POST.get('title')
           if new_title:

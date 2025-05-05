@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "imghostapp",
     "account",
+    "django.contrib.humanize"
 ]
 
 MIDDLEWARE = [
