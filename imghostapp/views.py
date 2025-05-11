@@ -16,29 +16,32 @@ def home_view(request):
 
 @login_required
 def upload_image(request):
-    if request.method == 'POST':
+     if request.method == 'POST':
         form = ImageForm(request.POST, request.FILES)
 
-        if form.is_valid():
-            image = form.save(commit=False)
-            image.user = request.user
-            uploaded_file = request.FILES['image']
-            uploaded_file_size = uploaded_file.size
-
-            current_usage = get_user_storage_size(request.user)
-            max_limit = get_user_storage_limit(request.user)
-
-            if current_usage + uploaded_file_size > max_limit:
-                 messages.error(request, 'Upload failed: Storage limit exceeded.')
-                 return redirect('upload-image')
-            
-            image.save()
-            messages.success(request, 'Image has been uploaded to the server')
-            return redirect('upload-image')
-    else:
-        form = ImageForm()
+     if form.is_valid():
+          image = form.save(commit=False)
+          image.user = request.user
+          uploaded_file = request.FILES['image']
+          uploaded_file_size = uploaded_file.size
+          current_usage = get_user_storage_size(request.user)
+          max_limit = get_user_storage_limit(request.user)
+          
+          if current_usage + uploaded_file_size > max_limit:
+               messages.error(request, 'Upload failed: Storage limit exceeded.')
+               return redirect('upload-image')
     
-    return render(request, 'imghostapp/upload.html', {'form': form})
+          try:
+               image.save()
+               messages.success(request, 'Image has been uploaded to the server')
+          except Exception as e:
+               messages.error(request, f'Error saving image: {str(e)}')
+               return redirect('upload-image')
+
+          else:
+               form = ImageForm()
+    
+     return render(request, 'imghostapp/upload.html', {'form': form})
 
 def user_gallery(request, username):
      user = get_object_or_404(Account, username=username)

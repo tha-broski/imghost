@@ -5,5 +5,5 @@ from .models import Image
 
 @receiver(post_delete, sender=Image)
 def delete_image_file(sender, instance, **kwargs):
-    if instance.Image and os.path.isfile(instance.image.path):
+    if instance.image and os.path.isfile(instance.image.path):
         os.remove(instance.image.path)
