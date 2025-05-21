@@ -19,6 +19,7 @@ from django.contrib import admin
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from imghostapp import views
+from imghostapp.views import UserGalleryView
 
 from account.views import (
     register_view,
@@ -61,7 +62,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
 
     # Gallery path
-    path('user/<str:username>/', views.user_gallery, name='user-gallery'),
+    path('gallery/<str:username>/', UserGalleryView.as_view(), name='user_gallery'),
 
     # Editing images
     path('image/delete/<int:image_id>/', views.delete_image, name='delete_image'),

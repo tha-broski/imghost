@@ -43,37 +43,45 @@ def upload_image(request):
     
      return render(request, 'imghostapp/upload.html', {'form': form})
 
-def user_gallery(request, username):
-     user = get_object_or_404(Account, username=username)
+from django.views.generic import ListView
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponseForbidden
+from .models import Image
+from account.models import Account
+from imghostapp.utils.storage import get_user_storage_size, get_user_storage_limit
 
-     if request.user != user and not (
-          request.user.is_authenticated and (
-               request.user.is_admin or request.user.is_staff or request.user.is_superuser
-          )
+class UserGalleryView(ListView):
+    model = Image
+    template_name = 'gallery/user_gallery.html'
+    context_object_name = 'images'
+    paginate_by = 10
+
+    def dispatch(self, request, *args, **kwargs):
+        self.user_profile = get_object_or_404(Account, username=kwargs['username'])
+
+        if request.user != self.user_profile and not (
+            request.user.is_authenticated and (
+                request.user.is_admin or request.user.is_staff or request.user.is_superuser
+            )
         ):
-          return HttpResponseForbidden("Sorry, you can't access this site.")
-     
-     images = Image.objects.filter(user=user).order_by('-created_at')
+            return HttpResponseForbidden("Sorry, you can't access this site.")
+        return super().dispatch(request, *args, **kwargs)
 
-     # Paginator
-     paginator = Paginator(images, 10)
-     page_number = request.GET.get('page')
-     images = paginator.get_page(page_number)
+    def get_queryset(self):
+        return Image.objects.filter(user=self.user_profile).order_by('-created_at')
 
-     # Storage
-     current_usage = get_user_storage_size(user)
-     max_limit = get_user_storage_limit(user)
-     remaining_space = max_limit - current_usage
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        current_usage = get_user_storage_size(self.user_profile)
+        max_limit = get_user_storage_limit(self.user_profile)
+        context.update({
+            'user': self.user_profile,
+            'current_usage': current_usage,
+            'max_limit': max_limit,
+            'remaining_space': max_limit - current_usage,
+        })
+        return context
 
-     context = {
-          'user':user,
-          'images':images,
-          'current_usage': current_usage,
-          'max_limit':max_limit,
-          'remaining_space':remaining_space,
-     }
-
-     return render(request, 'gallery/user_gallery.html', context)
 
 @login_required
 def delete_image(request, image_id):

@@ -23,7 +23,7 @@ class ImghostViewsTest(TestCase):
     def test_upload_image_post_valid(self):
         file = SimpleUploadedFile("test.jpg", b"file_content", content_type="image/jpeg")
         response = self.client.post(reverse('upload-image'), {'title': 'Uploaded Image', 'image': file})
-        self.assertEqual(response.status_code, 200)  # Might be 302 if redirect on success
+        self.assertEqual(response.status_code, 200) 
 
     def test_user_gallery_access(self):
         response = self.client.get(reverse('user_gallery', args=[self.user.username]))
@@ -48,3 +48,10 @@ class ImghostViewsTest(TestCase):
         self.assertEqual(response.status_code, 302)
         image.refresh_from_db()
         self.assertEqual(image.title, 'New Title')
+
+    def test_user_gallery_forbidden_access(self):
+        other_user = Account.objects.create_user(email='other@example.com', username='otheruser', password='password123')
+        self.client.logout()
+        self.client.login(email='other@example.com', password='password123')
+        response = self.client.get(reverse('user_gallery', args=[self.user.username]))
+        self.assertEqual(response.status_code, 403)
