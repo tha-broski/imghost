@@ -6,8 +6,8 @@ from django.contrib import messages
 from .models import Image
 from account.models import Account
 from django.http import HttpResponseForbidden
-from django.core.paginator import Paginator
 from imghostapp.utils.storage import get_user_storage_size, get_user_storage_limit
+from django.views.generic import ListView
 
 # Create your views here.
 def home_view(request):
@@ -17,38 +17,31 @@ def home_view(request):
 @login_required
 def upload_image(request):
      if request.method == 'POST':
-        form = ImageForm(request.POST, request.FILES)
+          form = ImageForm(request.POST, request.FILES)
 
-     if form.is_valid():
-          image = form.save(commit=False)
-          image.user = request.user
-          uploaded_file = request.FILES['image']
-          uploaded_file_size = uploaded_file.size
-          current_usage = get_user_storage_size(request.user)
-          max_limit = get_user_storage_limit(request.user)
+          if form.is_valid():
+               image = form.save(commit=False)
+               image.user = request.user
+               uploaded_file = request.FILES['image']
+               uploaded_file_size = uploaded_file.size
+               current_usage = get_user_storage_size(request.user)
+               max_limit = get_user_storage_limit(request.user)
           
-          if current_usage + uploaded_file_size > max_limit:
-               messages.error(request, 'Upload failed: Storage limit exceeded.')
-               return redirect('upload-image')
+               if current_usage + uploaded_file_size > max_limit:
+                    messages.error(request, 'Upload failed: Storage limit exceeded.')
+                    return redirect('upload-image')
     
-          try:
-               image.save()
-               messages.success(request, 'Image has been uploaded to the server')
-          except Exception as e:
-               messages.error(request, f'Error saving image: {str(e)}')
-               return redirect('upload-image')
+               try:
+                    image.save()
+                    messages.success(request, 'Image has been uploaded to the server')
+               except Exception as e:
+                    messages.error(request, f'Error saving image: {str(e)}')
+                    return redirect('upload-image')
 
-          else:
+     else:
                form = ImageForm()
     
      return render(request, 'imghostapp/upload.html', {'form': form})
-
-from django.views.generic import ListView
-from django.shortcuts import get_object_or_404
-from django.http import HttpResponseForbidden
-from .models import Image
-from account.models import Account
-from imghostapp.utils.storage import get_user_storage_size, get_user_storage_limit
 
 class UserGalleryView(ListView):
     model = Image
