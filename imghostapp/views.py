@@ -5,9 +5,10 @@ from .forms import ImageForm
 from django.contrib import messages
 from .models import Image
 from account.models import Account
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, FileResponse, Http404
 from imghostapp.utils.storage import get_user_storage_size, get_user_storage_limit
 from django.views.generic import ListView
+import os
 
 # Create your views here.
 def home_view(request):
@@ -42,6 +43,20 @@ def upload_image(request):
                form = ImageForm()
     
      return render(request, 'imghostapp/upload.html', {'form': form})
+
+@login_required
+def download_image(request, image_id):
+     try:
+          image = Image.objects.get(pk=image_id)
+          file_path = image.image.path
+          if image.user != request.user and not (request.user.is_admin or request.user.is_staff or request.user.is_superuser):
+               raise Http404('You cannot access this file')
+          return FileResponse(open(file_path, 'rb'), as_attachment=True, filename=os.path.basename(file_path))
+     except Image.DoesNotExist:
+          raise Http404("This file does not exist")
+     except FileNotFoundError:
+          raise Http404("File has not been found")
+
 
 class UserGalleryView(ListView):
     model = Image

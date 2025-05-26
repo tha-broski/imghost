@@ -66,6 +66,9 @@ urlpatterns = [
 
     # Editing images
     path('image/delete/<int:image_id>/', views.delete_image, name='delete_image'),
-    path('image/edit/<int:image_id>/', views.edit_image, name='edit_image')
+    path('image/edit/<int:image_id>/', views.edit_image, name='edit_image'),
+
+    #Downloading images
+    path('download/<int:image_id>/', views.download_image, name='download_image')
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

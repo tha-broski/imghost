@@ -14,6 +14,7 @@
                     {% csrf_token %}
                     <button type="submit">🗑 Usuń</button>
                 </form>
+                <a href="{% url 'download_image' image.id%}">Download image</a>
                 
                 <a href="{% url 'edit_image' image.id %}">✏ Edytuj tytuł</a>
             </li>
