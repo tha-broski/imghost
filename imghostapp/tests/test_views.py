@@ -55,3 +55,16 @@ class ImghostViewsTest(TestCase):
         self.client.login(email='other@example.com', password='password123')
         response = self.client.get(reverse('user_gallery', args=[self.user.username]))
         self.assertEqual(response.status_code, 403)
+
+    def test_owner_can_download_image(self):
+        image_file = SimpleUploadedFile("test.jpg", b"file_content", content_type="image/jpeg")
+        image = Image.objects.create(title="Test Image", user=self.user, image=image_file)
+
+        url = reverse('download_image', args=[image.id])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('attachment', response.get('Content-Disposition'))
+
+        content = b''.join(response.streaming_content)
+        self.assertEqual(content, b"file_content")

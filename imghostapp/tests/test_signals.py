@@ -5,6 +5,9 @@ from django.test import TestCase
 from django.conf import settings
 from account.models import Account
 from imghostapp.models import Image
+from django.core.files.uploadedfile import SimpleUploadedFile
+from PIL import Image as PilImage
+import io
 
 class SignalTest(TestCase):
     def setUp(self):
@@ -13,14 +16,14 @@ class SignalTest(TestCase):
         self.original_media_root = settings.MEDIA_ROOT
         settings.MEDIA_ROOT = self.temp_dir
 
-        self.user_folder = os.path.join(settings.MEDIA_ROOT, f'user_{self.user.username}')
-        os.makedirs(self.user_folder, exist_ok=True)
+        image_io = io.BytesIO()
+        image = PilImage.new('RGB', (100, 100), color='red')
+        image.save(image_io, format='JPEG')
+        image_io.seek(0)
 
-        self.test_image_path = os.path.join(self.user_folder, 'image.jpg')
-        with open(self.test_image_path, 'wb') as f:
-            f.write(b'imagecontent')
+        uploaded_file = SimpleUploadedFile("image.jpg", image_io.read(), content_type="image/jpeg")
 
-        self.image = Image.objects.create(title='Signal Image', user=self.user, image=f'user_{self.user.username}/image.jpg')
+        self.image = Image.objects.create(title='Signal Image', user=self.user, image=uploaded_file)
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
